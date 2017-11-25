@@ -1,5 +1,5 @@
-:root{
- line-height: inherit;
+:root {
+  line-height: inherit;
 }
 
 .root {
@@ -22,12 +22,12 @@
 }
 
 .epic {
-  color: #AB48EE;
+  color: #ab48ee;
   display: inline-flex;
 }
 
 .legendary {
-  color: #F07000;
+  color: #f07000;
   display: inline-flex;
 }
 

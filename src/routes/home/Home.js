@@ -8,12 +8,24 @@
  */
 
 import React from 'react';
-import PropTypes from 'prop-types';
-import {Grid, Form, Button, Message, Segment} from 'semantic-ui-react';
-import {decode} from 'deckstrings';
+import {
+  Grid,
+  Form,
+  Button,
+  Message,
+  Segment,
+  Header,
+  Image,
+} from 'semantic-ui-react';
+import { decode } from 'deckstrings';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
 import CardViewTable from '../../components/CardViewTable/CardViewTable';
 import s from './Home.css';
+import frozenImage from '../../../public/images/frozen.png';
+import goroImage from '../../../public/images/goro.png';
+import gadgetImage from '../../../public/images/gadget.png';
+import wtogImage from '../../../public/images/wtog.png';
+import karaImage from '../../../public/images/kara.png';
 
 const initialState = {
   isError: false,
@@ -24,16 +36,6 @@ const initialState = {
 };
 
 class Home extends React.Component {
-  static propTypes = {
-    news: PropTypes.arrayOf(
-      PropTypes.shape({
-        title: PropTypes.string.isRequired,
-        link: PropTypes.string.isRequired,
-        content: PropTypes.string,
-      }),
-    ).isRequired,
-  };
-
   constructor(props) {
     super(props);
     this.state = initialState;
@@ -50,7 +52,7 @@ class Home extends React.Component {
         return response.error("Server didn't answer");
       })
       .then(data => {
-        this.setState({allCards: data});
+        this.setState({ allCards: data });
       })
       .catch(() => {
         console.error('We had some error');
@@ -63,29 +65,28 @@ class Home extends React.Component {
     if (deckInput.length > 0) {
       try {
         decodedDeck = decode(deckInput);
-        this.setState({userDeck: decodedDeck}, this.getFullDeckInfo);
+        this.setState({ userDeck: decodedDeck }, this.getFullDeckInfo);
       } catch (e) {
-        this.setState({isError: true});
+        this.setState({ isError: true });
         console.error('Deck hash is wrong');
       }
     }
   };
 
   getFullDeckInfo = () => {
-    const userDeck = this.state.userDeck;
+    const { userDeck } = this.state.userDeck;
     if (userDeck.format !== 2) {
-      this.setState({isError: true});
+      this.setState({ isError: true });
     } else {
       const deckInfo = [];
       this.state.allCards.forEach(card => {
         userDeck.cards.forEach(userCard => {
           if (userCard[0] === card.dbfId) {
-            deckInfo.push({...card, count: userCard[1]});
+            deckInfo.push({ ...card, count: userCard[1] });
           }
         });
       });
-      this.setState({userDeckFull: deckInfo});
-      console.log(deckInfo);
+      this.setState({ userDeckFull: deckInfo });
     }
   };
 
@@ -98,21 +99,22 @@ class Home extends React.Component {
     }
   };
 
-  resetForm = () => {
-    this.setState({
-      isError: false,
-      deckInputString: '',
-      userDeck: undefined,
-      userDeckFull: [],
-    });
-  };
+  // resetForm = () => {
+  //   this.setState({
+  //     isError: false,
+  //     deckInputString: '',
+  //     userDeck: undefined,
+  //     userDeckFull: [],
+  //   });
+  // };
 
   render() {
     return (
       <div>
         <Grid className={s.container} columns={3} divided>
-          <Grid.Row stretched>
+          <Grid.Row>
             <Grid.Column width={3}>
+              <Header as="h3">Deck Input</Header>
               <Form error={this.state.isError} onSubmit={this.getDeckString}>
                 <Form.Input
                   name="deck"
@@ -130,10 +132,15 @@ class Home extends React.Component {
               </Form>
             </Grid.Column>
             <Grid.Column width={8}>
-              <CardViewTable userDeck={this.state.userDeckFull}/>
+              <Header as="h3">Deck stats</Header>
+              <CardViewTable
+                userDeck={this.state.userDeckFull.sort(
+                  (a, b) => a.cost - b.cost,
+                )}
+              />
             </Grid.Column>
             <Grid.Column width={5}>
-              <h3>Standard Sets</h3>
+              <Header as="h3">Standard Sets</Header>
               <Segment.Group>
                 <Segment>
                   <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=2&filter-unreleased=1">
@@ -146,26 +153,26 @@ class Home extends React.Component {
                   </a>
                 </Segment>
                 <Segment inverted color="olive" size="tiny">
-                  Default part of Standard, won't be removed
+                  {`Default part of Standard, won't be removed`}
                 </Segment>
               </Segment.Group>
               <Segment.Group>
                 <Segment>
-                  <a
-                    href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=105&filter-unreleased=1">
+                  <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=105&filter-unreleased=1">
                     Whispers of the Old God
                   </a>
+                  <Image src={wtogImage} floated="right" />
                 </Segment>
                 <Segment>
-                  <a
-                    href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=106&filter-unreleased=1">
+                  <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=106&filter-unreleased=1">
                     One Night in Karazhan
+                    <Image src={karaImage} floated="right" />
                   </a>
                 </Segment>
                 <Segment>
-                  <a
-                    href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=107&filter-unreleased=1">
+                  <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=107&filter-unreleased=1">
                     Mean Streets of Gadgetzan
+                    <Image src={gadgetImage} floated="right" />
                   </a>
                 </Segment>
                 <Segment inverted color="olive" size="tiny">
@@ -174,15 +181,15 @@ class Home extends React.Component {
               </Segment.Group>
               <Segment.Group>
                 <Segment>
-                  <a
-                    href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=108&filter-unreleased=1">
-                    Journey to Un'Goro
+                  <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=108&filter-unreleased=1">
+                    {`Journey to Un'Goro`}
+                    <Image src={goroImage} floated="right" />
                   </a>
                 </Segment>
                 <Segment>
-                  <a
-                    href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=109&filter-unreleased=1">
+                  <a href="http://www.hearthpwn.com/cards?display=1&filter-premium=1&filter-set=109&filter-unreleased=1">
                     Knights of the Frozen Throne
+                    <Image src={frozenImage} floated="right" />
                   </a>
                 </Segment>
                 <Segment inverted color="teal" size="tiny">
