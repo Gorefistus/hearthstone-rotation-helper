@@ -74,7 +74,7 @@ class Home extends React.Component {
   };
 
   getFullDeckInfo = () => {
-    const { userDeck } = this.state.userDeck;
+    const { userDeck } = this.state;
     if (userDeck.format !== 2) {
       this.setState({ isError: true });
     } else {
@@ -133,11 +133,15 @@ class Home extends React.Component {
             </Grid.Column>
             <Grid.Column width={8}>
               <Header as="h3">Deck stats</Header>
-              <CardViewTable
-                userDeck={this.state.userDeckFull.sort(
-                  (a, b) => a.cost - b.cost,
-                )}
-              />
+              {this.state.userDeckFull && this.state.userDeckFull.length > 0 ? (
+                <CardViewTable
+                  userDeck={this.state.userDeckFull.sort(
+                    (a, b) => a.cost - b.cost,
+                  )}
+                />
+              ) : (
+                <div> Your Deck stats will be here!</div>
+              )}
             </Grid.Column>
             <Grid.Column width={5}>
               <Header as="h3">Standard Sets</Header>

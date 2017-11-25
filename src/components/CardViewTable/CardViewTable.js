@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import withStyles from 'isomorphic-style-loader/lib/withStyles';
-import { Table, Image } from 'semantic-ui-react';
+import { Table, Image, Card } from 'semantic-ui-react';
 import imageLinks from 'hearthstone-card-images'; //eslint-disable-line
 import CardCell from '../CardCell/CardCell';
 
@@ -37,7 +37,34 @@ class CardView extends React.Component {
     this.setState({ userDeck: nextProps.userDeck });
   }
 
-  getRotationStatus = card => {
+  getDeckRotationStatus = () => {
+    const rotationArray = [];
+    this.state.userDeck.forEach(card => {
+      if (this.isCardRotating(card)) {
+        rotationArray.push({
+          dustValue: this.isCardRotating(card),
+          count: card.count,
+        });
+      }
+    });
+    if (rotationArray.length > 0) {
+      let cardCount = 0;
+      let overallDust = 0;
+      rotationArray.forEach(card => {
+        cardCount += card.count;
+        overallDust += card.dustValue;
+      });
+      return (
+        <div>
+          {`Your deck will lose ${cardCount} cards for ${overallDust}`}{' '}
+          <Image inline spaced="left" src={dustIcon} />
+        </div>
+      );
+    }
+    return <div> Your deck is safe next rotation!</div>;
+  };
+
+  getCardRotationStatus = card => {
     let rotationMessage = 'Not rotating next time';
     rotatingSets.forEach(rotatingSet => {
       if (rotatingSet === card.set) {
@@ -65,8 +92,8 @@ class CardView extends React.Component {
 
   isCardRotating = card => {
     let dustValue;
-    rotatingSets.forEach(ratatingSet => {
-      if (ratatingSet === card.set) {
+    rotatingSets.forEach(rotatingSet => {
+      if (rotatingSet === card.set) {
         dustValue = rarityDustValue[card.rarity] * card.count;
       }
     });
@@ -95,14 +122,13 @@ class CardView extends React.Component {
           break;
         case 'dust':
           sortedDeck = sortedDeck.sort((a, b) => {
-            if (
-              this.isCardRotating(a) !== undefined &&
-              this.isCardRotating(b) !== undefined
-            ) {
-              if (this.isCardRotating(a) < this.isCardRotating(b)) return -1;
-              if (this.isCardRotating(a) > this.isCardRotating(b)) return 1;
+            const costA = this.isCardRotating(a);
+            const costB = this.isCardRotating(b);
+            if (costA !== undefined && costB !== undefined) {
+              if (costA < costB) return -1;
+              if (costA > costB) return 1;
               return 0;
-            } else if (this.isCardRotating(a) !== undefined) {
+            } else if (costA !== undefined) {
               return 1;
             }
             return -1;
@@ -128,45 +154,52 @@ class CardView extends React.Component {
 
   render() {
     return (
-      <Table basic="very" celled sortable>
-        <Table.Header>
-          <Table.Row>
-            <Table.HeaderCell
-              sorted={this.state.column === 'name' ? this.state.order : null}
-              onClick={() => this.handleSort('name')}
-            >
-              Card Name
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              sorted={this.state.column === 'cost' ? this.state.order : null}
-              onClick={() => this.handleSort('cost')}
-            >
-              Mana Cost
-            </Table.HeaderCell>
-            <Table.HeaderCell
-              sorted={this.state.column === 'dust' ? this.state.order : null}
-              onClick={() => this.handleSort('dust')}
-            >
-              Rotation Status
-            </Table.HeaderCell>
-          </Table.Row>
-        </Table.Header>
-
-        <Table.Body>
-          {this.state.userDeck.map(card => (
-            <Table.Row key={card.dbfId}>
-              <Table.Cell>
-                <CardCell card={card} cardUrl={this.getCardImageUrl(card)} />
-              </Table.Cell>
-              <Table.Cell>
-                {card.cost}
-                <Image inline spaced="left" src={manaIcon} />{' '}
-              </Table.Cell>
-              <Table.Cell>{this.getRotationStatus(card)} </Table.Cell>
+      <div>
+        <Card fluid>
+          <Card.Content>
+            <Card.Description>{this.getDeckRotationStatus()}</Card.Description>
+          </Card.Content>
+        </Card>
+        <Table basic="very" celled sortable>
+          <Table.Header>
+            <Table.Row>
+              <Table.HeaderCell
+                sorted={this.state.column === 'name' ? this.state.order : null}
+                onClick={() => this.handleSort('name')}
+              >
+                Card Name
+              </Table.HeaderCell>
+              <Table.HeaderCell
+                sorted={this.state.column === 'cost' ? this.state.order : null}
+                onClick={() => this.handleSort('cost')}
+              >
+                Mana Cost
+              </Table.HeaderCell>
+              <Table.HeaderCell
+                sorted={this.state.column === 'dust' ? this.state.order : null}
+                onClick={() => this.handleSort('dust')}
+              >
+                Rotation Status
+              </Table.HeaderCell>
             </Table.Row>
-          ))}
-        </Table.Body>
-      </Table>
+          </Table.Header>
+
+          <Table.Body>
+            {this.state.userDeck.map(card => (
+              <Table.Row key={card.dbfId}>
+                <Table.Cell>
+                  <CardCell card={card} cardUrl={this.getCardImageUrl(card)} />
+                </Table.Cell>
+                <Table.Cell>
+                  {card.cost}
+                  <Image inline spaced="left" src={manaIcon} />{' '}
+                </Table.Cell>
+                <Table.Cell>{this.getCardRotationStatus(card)} </Table.Cell>
+              </Table.Row>
+            ))}
+          </Table.Body>
+        </Table>
+      </div>
     );
   }
 }
